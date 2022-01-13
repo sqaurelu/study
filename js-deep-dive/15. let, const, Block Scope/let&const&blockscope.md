@@ -106,8 +106,15 @@ console.log(bar); // ReferenceError
 - `let` 키워드로 선언한 변수는 호이스팅이 발생하지 않는 것처럼 동작
 
 ```javascript
-console.log(foo);
-let foo = 1; // ReferenceError
+console.log(foo); // ReferenceError
+let foo;
+
+let bar = 2; // 전역 변수
+{
+  console.log(bar); // ReferenceError: Cannot access 'bar' before initialization 
+  // -> 호이스팅이 일어나지 않으면 2가 출력되어야 함.
+  let bar = 10; // 지역 변수
+}
 ```
 
 <img width="697" alt="var vs let" src="https://user-images.githubusercontent.com/55270881/147895273-a5343eaf-a96c-46df-bf5a-5347ab8cfe23.png">
