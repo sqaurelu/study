@@ -2,6 +2,10 @@
   - [타입 추론](#타입-추론)
   - [튜플](#튜플)
   - [enum](#enum)
+  - [유니언 타입](#유니언-타입)
+  - [함수 타입](#함수-타입)
+  - [unknown 타입](#unknown-타입)
+  - [never 타입](#never-타입)
 
 # Type(타입)
 
@@ -78,6 +82,8 @@ example = 'hello';
     }
     ```
 
+-   enum 사용
+
     ```tsx
     enum Role {
         STUDENT,
@@ -97,3 +103,145 @@ example = 'hello';
         console.log('student');
     }
     ```
+
+## 유니언 타입
+
+-   OR
+-   숫자가 들어오면 덧셈 연산, 문자열이 들어오면 문자열을 합쳐주는 연산을 위한 combine 함수를 만들고 싶음.
+
+    ```tsx
+    function combine(input1: number | string, input2: number | string) {
+        let result = input1 + input2; // type error
+        return result;
+    }
+
+    console.log(combine(3, 5));
+    ```
+
+    '+' 연산자를 'string | number' 타입에 적용할 수 없다.
+
+    ```tsx
+    function combine(input1: number | string, input2: number | string) {
+        let result;
+        if (typeof input1 === 'number' && typeof input2 === 'number') {
+            result = input1 + input2;
+        } else result = input1.toString() + input2.toString();
+
+        return result;
+    }
+
+    console.log(combine(3, 5));
+    ```
+
+    둘 다 숫자인 경우만 덧셈 연산이 되도록 처리해주면 된다.
+
+## 함수 타입
+
+-   함수 타입은 function notation에 의해 생성된다. `() => ()`
+-   어떤 param을 받고, 어떤 값을 반환할지 정의할 수 있게 해준다.
+
+    ```tsx
+    function add(n1: number, n2: number) {
+        return n1 + n2;
+    }
+
+    function printResult(num: number): void {
+        console.log('Result: ', num);
+    }
+
+    let combineValues: Function;
+    combineValues = printResult;
+
+    console.log(combineValues(8, 8));
+    ```
+
+    combineValues = add가 되어야 하는데, printResult 함수가 들어감. ⇒ combineValues의 타입으로 Function이 들어갔기 때문에 typescript는 이런 에러를 잡지 못한다.
+
+    ```tsx
+    let combineValues: (n1: number, n2: number) => number;
+    combineValues = printResult;
+
+    console.log(combineValues(8, 8)); // error
+    ```
+
+-   callback example
+
+    ```tsx
+    function add(n1: number, n2: number) {
+        return n1 + n2;
+    }
+
+    function printResult(num: number): void {
+        console.log('Result: ', num);
+    }
+
+    function addAndHandle(n1: number, n2: number, cb: (num: number) => void) {
+        const result = n1 + n2;
+        cb(result);
+    }
+
+    addAndHandle(3, 5, printResult);
+    ```
+
+## unknown 타입
+
+-   any 보다 제한적인 타입이다.
+
+    ```tsx
+    let userInput: unknown;
+
+    userInput = 4;
+    userInput = '4';
+    ```
+
+    ```tsx
+    let userInput: unknown;
+    let userName: string;
+
+    userInput = 4;
+    userInput = 'bawi';
+    userName = userInput; // error -> 'unknown' 형식은 'string' 형식에 할당할 수 없다.
+    ```
+
+    userInput의 타입을 any로 바꾸면 에러가 안난다. → typescript는 any 타입을 사용할 경우 타입 체크를 disable 시키기 때문.
+
+    ```tsx
+    let userInput: any;
+    let userName: string;
+
+    userInput = 4;
+    userInput = 'bawi';
+    userName = userInput;
+    ```
+
+    unknown 타입을 쓰고 싶은 경우 쓰기 전 타입 체크를 해주면 된다.
+
+    ```tsx
+    let userInput: unknown;
+    let userName: string;
+
+    userInput = 4;
+    userInput = 'bawi';
+
+    if (typeof userInput === 'string') {
+        userName = userInput;
+    }
+    ```
+
+    특정 타입으로 고정되어있는 변수에 unknown 타입을 assign 시키고 싶은 경우에는 assign 전에 타입 체크를 해주면 된다.
+
+-   어떤 타입을 저장할지 모를 때는 any 보다 unknown을 쓰는 것이 더욱 안전하다. (unknown도 쓰지 않는 것이 good)
+
+## never 타입
+
+```tsx
+function generateError(message: string, code: number): never {
+    throw {
+        message,
+        errorCode: code,
+    };
+}
+
+const result = generateError('An error occured!!', 500);
+console.log(result);
+```
